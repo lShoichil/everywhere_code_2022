@@ -1,8 +1,9 @@
 from flask import Blueprint, redirect, url_for, jsonify, request
-import vk_api
+import vk
 
 from . import db
 from .models import Mems
+from .config import access_token
 
 main_routes = Blueprint("main", __name__, template_folder="templates")
 
@@ -14,43 +15,35 @@ def home():
 
 @main_routes.route("/load_mems", methods=['POST'])
 def load_mems():
-    login = request.form['login']
-    password = request.form['password']
     url_albom_mems = request.form['url']
 
-    try:
-        vk_session = vk_api.VkApi(login=login, password=password)
-        vk_session.auth()
-        access_token = vk_session.token['access_token']
+    session = vk.Session()
+    api = vk.API(session)
 
-        album_id = url_albom_mems.split('/')[-1].split('_')[1]
-        owner_id = url_albom_mems.split('/')[-1].split('_')[0].replace('album', '')
+    album_id = url_albom_mems.split('/')[-1].split('_')[1]
+    owner_id = url_albom_mems.split('/')[-1].split('_')[0].replace('album', '')
 
-        vk = vk_session.get_api()
+    mems = api.photos.get(v=5.131,
+                          album_id=album_id,
+                          owner_id=owner_id,
+                          access_token=access_token,
+                          extended=1,
+                          )
 
-        mems = vk.photos.get(album_id=album_id,
-                             owner_id=owner_id,
-                             access_token=access_token,
-                             extended=1)
+    for image in mems["items"]:
+        vk_links = f'https://vk.com/id{image["user_id"]}'
+        vk_id = image["user_id"]
+        likes = image["likes"]["count"]
+        url_image = image["sizes"][-1]["url"]
 
-        for image in mems["items"]:
-            user = vk.users.get(access_token=access_token,
-                                user_ids=image["user_id"])
-            vk_id = image["user_id"]
-            username = f'{user[0]["first_name"]} {user[0]["last_name"]}'
-            likes = image["likes"]["count"]
-            url_image = image["sizes"][-1]["url"]
+        new_mem = Mems(vk_links=vk_links,
+                       vk_id=vk_id,
+                       likes=likes,
+                       url_image=url_image)
+        db.session.add(new_mem)
+        db.session.commit()
 
-            new_mem = Mems(vk_id=vk_id,
-                           username=username,
-                           likes=likes,
-                           url_image=url_image)
-            db.session.add(new_mem)
-            db.session.commit()
-
-        return redirect(url_for('main.get_all_mems'))
-    except vk_api.exceptions.BadPassword:
-        return jsonify({'message': 'Неверный Логин/Пароль'})
+    return redirect(url_for('main.get_all_mems'))
 
 
 @main_routes.route("/get_all_mems", methods=['GET'])
@@ -61,7 +54,7 @@ def get_all_mems():
 
     for mem in mems:
         mem_data = {}
-        mem_data['username'] = mem.username
+        mem_data['vk_links'] = mem.vk_links
         mem_data['vk_id'] = mem.vk_id
         mem_data['likes'] = mem.likes
         mem_data['url_image'] = mem.url_image
