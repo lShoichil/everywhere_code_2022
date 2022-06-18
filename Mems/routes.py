@@ -69,7 +69,6 @@ def get_all_mems():
 @main_routes.route('/delete_all_mems', methods=['DELETE'])
 def delete_all_mems():
     mems = Mems.query.all()
-    print(mems)
     if not mems:
         return jsonify({'message': 'Мемы уже удалены'})
 
