@@ -28,18 +28,20 @@ def load_mems():
                           owner_id=owner_id,
                           access_token=access_token,
                           extended=1,
+                          rev=1
                           )
 
     for image in mems["items"]:
         vk_links = f'https://vk.com/id{image["user_id"]}'
         vk_id = image["user_id"]
-        likes = image["likes"]["count"]
+        likes_parse = image["likes"]["count"]
         url_image = image["sizes"][-1]["url"]
 
         new_mem = Mems(vk_links=vk_links,
                        vk_id=vk_id,
-                       likes=likes,
-                       url_image=url_image)
+                       likes_parse=likes_parse,
+                       url_image=url_image,
+                       likes_count=0)  # для 2,3 заданий
         db.session.add(new_mem)
         db.session.commit()
 
@@ -56,7 +58,7 @@ def get_all_mems():
         mem_data = {}
         mem_data['vk_links'] = mem.vk_links
         mem_data['vk_id'] = mem.vk_id
-        mem_data['likes'] = mem.likes
+        mem_data['likes_parse'] = mem.likes_parse
         mem_data['url_image'] = mem.url_image
         output.append(mem_data)
 
@@ -77,3 +79,49 @@ def delete_all_mems():
     db.session.commit()
 
     return jsonify({'message': 'Все мемы были удалены'})
+
+
+count_mems = 0
+it_first = True
+
+
+@main_routes.route('/likes_or_skip', methods=["POST"])
+def likes_or_skip():
+
+    global count_mems, it_first
+    rows = db.session.query(Mems).count()
+    id = Mems.query.all()[count_mems].id
+    mem = Mems.query.filter_by(id=id).first()
+
+    if rows == 0:
+        return jsonify({'message': 'У вас нет мемов:('})
+    elif rows == count_mems + 1:
+        count_mems = 0
+        it_first = True
+        mem.likes_count += 1
+        db.session.commit()
+        return jsonify({'message': 'Это был последний! Больше мемов у нас нет. :( '
+                                   'При следующем запросе вы начнёте сначала'})
+
+    elif request.method == 'POST':
+
+        if count_mems == 0 and it_first:
+            it_first = False
+            message = f'Это первый мем из {rows}! Лайкните или пропустите?'
+            return jsonify({'message': message,
+                            'url_mem_now': Mems.query.all()[count_mems].url_image})
+        l_or_p = request.form['l_or_p']
+
+        count_mems += 1
+        if l_or_p == '1':
+            mem.likes_count += 1
+            db.session.commit()
+            message = f'Вы лайкнули {count_mems} мем из {rows}! Вы сейчас на {count_mems + 1} меме.'
+            return jsonify({'message': message,
+                            'url_mem_liked': Mems.query.all()[count_mems - 1].url_image,
+                            'url_mem_now': Mems.query.all()[count_mems].url_image})
+        if l_or_p == '0':
+            message = f'Вы пропустили {count_mems} мем из {rows}! Вы сейчас на {count_mems + 1} меме.'
+            return jsonify({'message': message,
+                            'url_mem_now': Mems.query.all()[count_mems].url_image,
+                            'url_mem_skiped': Mems.query.all()[count_mems - 1].url_image})
