@@ -7,7 +7,6 @@ class Mems(db.Model):
     vk_links = db.Column(db.String(300))
     vk_id = db.Column(db.Integer)
     likes_parse = db.Column(db.Integer)
-    likes_count = db.Column(db.Integer) # для 2,3 заданий
+    likes_count = db.Column(db.Integer)  # для 2,3 заданий
     url_image = db.Column(db.String(300))
-    promote = db.Column(db.Boolean) # для 3
-
+    promote = db.Column(db.Boolean)  # для 3
