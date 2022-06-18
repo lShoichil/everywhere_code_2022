@@ -9,3 +9,5 @@ class Mems(db.Model):
     likes_parse = db.Column(db.Integer)
     likes_count = db.Column(db.Integer) # для 2,3 заданий
     url_image = db.Column(db.String(300))
+    promote = db.Column(db.Boolean) # для 3
+

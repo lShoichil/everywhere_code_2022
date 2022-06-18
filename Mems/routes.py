@@ -1,3 +1,6 @@
+import json
+import random
+
 from flask import Blueprint, redirect, url_for, jsonify, request
 import vk
 
@@ -41,7 +44,8 @@ def load_mems():
                        vk_id=vk_id,
                        likes_parse=likes_parse,
                        url_image=url_image,
-                       likes_count=0)  # для 2,3 заданий
+                       likes_count=0,  # для 2,3 заданий
+                       promote=0)  # для 3 задания
         db.session.add(new_mem)
         db.session.commit()
 
@@ -87,7 +91,6 @@ it_first = True
 
 @main_routes.route('/likes_or_skip', methods=["POST"])
 def likes_or_skip():
-
     global count_mems, it_first
     rows = db.session.query(Mems).count()
     id = Mems.query.all()[count_mems].id
@@ -125,3 +128,30 @@ def likes_or_skip():
             return jsonify({'message': message,
                             'url_mem_now': Mems.query.all()[count_mems].url_image,
                             'url_mem_skiped': Mems.query.all()[count_mems - 1].url_image})
+
+
+@main_routes.route('/update_promote/<int:mem_id>')
+def update_promote(mem_id):
+    mems = Mems.query.all()
+    if not mems:
+        return jsonify({'message': 'У вас нет мемов:('})
+    mem = Mems.query.filter_by(id=mem_id).first()
+    if not mem:
+        return jsonify({'message': 'Мема с таким id не существует'})
+
+    mems_sorted = db.session.query(Mems).order_by(Mems.likes_count).all()
+    print(mems_sorted)
+    db.session.commit()
+    return jsonify({'message': 'Теперь этот мем в приоритете!'})
+
+
+@main_routes.route('/test_for_third')
+def test_for_third():
+    mems = Mems.query.all()
+
+    for mem in mems:
+        tt = random.randint(1, 3)
+        if tt != 1:
+            mem.likes_count = random.randint(25, 1000)
+    db.session.commit()
+    return jsonify({'message': "Успешно"})
