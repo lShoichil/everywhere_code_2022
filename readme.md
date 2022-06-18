@@ -6,11 +6,13 @@
 import os
 
 file_path = os.path.abspath(os.getcwd()) + "/mems.db"
-SECRET_KEY = 'thisissecret'
+SECRET_KEY = '...'
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + file_path
 SQLALCHEMY_TRACK_MODIFICATIONS = True
+access_token = '...'
+
 ```
-Этот файл содержит секретный ключ, поэтому я не стал его выкладывать.
+Этот файл содержит секретный ключ и токен, поэтому я не стал его выкладывать. Свой секретный ключ токен нужно ввести вместо '...'
 - Создать виртуальное окружение:
 
 Установить библиотеку virtualenv для python командой:
@@ -51,17 +53,14 @@ ImportError: cannot import name 'Iterable' from 'collections'
 ### Загрузка мемов (требуется логин, пароль, url)на интересующий альбом)
 - Сразу после успешной загрузки будет redirect на url с запросом на вывод всех мемов, т.е. будет вывод всех мемов
 
-![image](https://user-images.githubusercontent.com/78679833/174426797-eee245cc-8ef5-41c1-9b85-e1c9f77a7006.png)
-- В случае неправильного логина или пароль, будет получено следующее сообщение
-
-![image](https://user-images.githubusercontent.com/78679833/174426826-e80cf1b4-0d42-474a-995d-5d2855a9b200.png)
+![image](https://user-images.githubusercontent.com/78679833/174429925-0fb53d16-9855-4456-8c13-8bbd5858c6df.png)
 
 ### Получение всех мемов
 - Если база мемов не пуста, то выведется следующее
-![image](https://user-images.githubusercontent.com/78679833/174426843-c3df938e-a6bf-4fdd-84a7-1a8d12dd890c.png)
+![image](https://user-images.githubusercontent.com/78679833/174429939-7aa823a6-2e17-4d8d-bcc4-8981ae3ee59a.png)
 
 - Если база пуста, то выведется соответствующее сообщение:
-![image](https://user-images.githubusercontent.com/78679833/174427223-dfc4293e-5ffe-45ab-a16b-be885352b6a7.png)
+![image](https://user-images.githubusercontent.com/78679833/174429953-138c0613-27b7-485f-b7e0-2d554163d595.png)
 
 ### Удаление всех мемов
 - В случае если база была не пуста, то мемы будут удалено и будет выведено соответствующее сообщение
