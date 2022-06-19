@@ -110,12 +110,15 @@ def likes_or_skip():
         message = f"Это первый мем из {rows}! Лайкните или пропустите?"
         return jsonify({"message": message, "url_mem_now": mem_first.url_image})
 
+    l_or_p = request.form["l_or_p"]
+    
     if rows == count_mems + 1:
         count_mems = 0
         it_first = True
         mem_last = Mems.query.all()[count_mems - 1]
-        mem_last.likes_count += 1
-        db.session.commit()
+        if l_or_p == '1':
+            mem_last.likes_count += 1
+            db.session.commit()
         recomended = Mems.query.filter_by(promote=True).first()
 
         if recomended:
@@ -146,8 +149,6 @@ def likes_or_skip():
                 url_mem_now = mem_now.url_image
     else:
         url_mem_now = mem_now.url_image
-
-    l_or_p = request.form["l_or_p"]
 
     if l_or_p == "1":  # Лайк
         if recomended and url_mem_now == recomended.url_image:
