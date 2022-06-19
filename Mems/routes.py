@@ -17,7 +17,6 @@ def home():
 
 @main_routes.route("/load_mems", methods=["POST"])
 def load_mems():
-
     url_albom_mems = request.form["url"]
 
     session = vk.Session()
@@ -57,7 +56,6 @@ def load_mems():
 
 @main_routes.route("/get_all_mems", methods=["GET"])
 def get_all_mems():
-
     mems = Mems.query.all()
 
     output = []
@@ -79,7 +77,6 @@ def get_all_mems():
 
 @main_routes.route("/delete_all_mems", methods=["DELETE"])
 def delete_all_mems():
-
     mems = Mems.query.all()
     if not mems:
         return jsonify({"message": "Мемы уже удалены"})
@@ -90,14 +87,13 @@ def delete_all_mems():
 
     return jsonify({"message": "Все мемы были удалены"})
 
-# Глобальная, что бы было легче тестировать и задать сразу например 49/50
-count_mems = 0
+
+count_mems = 48
 it_first = True
 
 
 @main_routes.route("/likes_or_skip", methods=["POST"])
 def likes_or_skip():
-
     global count_mems, it_first
     rows = db.session.query(Mems).count()
 
@@ -111,7 +107,7 @@ def likes_or_skip():
         return jsonify({"message": message, "url_mem_now": mem_first.url_image})
 
     l_or_p = request.form["l_or_p"]
-    
+
     if rows == count_mems + 1:
         count_mems = 0
         it_first = True
@@ -128,7 +124,7 @@ def likes_or_skip():
         return jsonify(
             {
                 "message": "Это был последний! Больше мемов у нас нет. :( "
-                "При следующем запросе вы начнёте сначала. Так же продвижение поста приостановленно"
+                           "При следующем запросе вы начнёте сначала. Так же продвижение поста приостановленно"
             }
         )
 
@@ -147,6 +143,8 @@ def likes_or_skip():
             tt = random.randint(1, 3)
             if tt != 1:
                 url_mem_now = mem_now.url_image
+            else:
+                url_mem_now = recomended.url_image
     else:
         url_mem_now = mem_now.url_image
 
@@ -166,7 +164,6 @@ def likes_or_skip():
 
 @main_routes.route("/update_promote/<int:mem_id>")
 def update_promote(mem_id):
-
     mems = Mems.query.all()
     if not mems:
         return jsonify({"message": "У вас нет мемов:("})
@@ -200,7 +197,7 @@ def update_promote(mem_id):
 
 @main_routes.route("/test_for_third")
 def test_for_third():
-
+    print(Mems.query.all())
     for mem in Mems.query.all():
         tt = random.randint(1, 3)
         if tt != 1:
