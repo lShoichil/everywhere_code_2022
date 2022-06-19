@@ -90,8 +90,8 @@ def delete_all_mems():
 
     return jsonify({"message": "Все мемы были удалены"})
 
-
-count_mems = 48
+# Глобальная, что бы было легче тестировать и задать сразу например 49/50
+count_mems = 0
 it_first = True
 
 
